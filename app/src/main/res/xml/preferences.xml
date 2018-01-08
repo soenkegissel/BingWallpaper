@@ -20,7 +20,7 @@
             android:title="@string/pref_alarm_update_wallpaper_everyday"
             android:widgetLayout="@layout/mp_preference_switch" />
 
-        <me.liaoheng.bingwallpaper.view.TimePreference
+        <com.rucksack.dailywallpaper.view.TimePreference
             android:defaultValue="00:00:00.000"
             android:enabled="false"
             android:key="pref_set_wallpaper_day_auto_update_time"
@@ -50,14 +50,14 @@
 
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_about">
-        <me.liaoheng.bingwallpaper.view.VersionPreference
+        <com.rucksack.dailywallpaper.view.VersionPreference
             android:key="pref_version"
             android:persistent="false"
             android:title="@string/pref_version">
-            <intent
+<!--            <intent
                 android:action="android.intent.action.VIEW"
-                android:data="https://github.com/liaoheng/BingWallpaper" />
-        </me.liaoheng.bingwallpaper.view.VersionPreference>
+                android:data="https://github.com/liaoheng/BingWallpaper" />-->
+        </com.rucksack.dailywallpaper.view.VersionPreference>
         <Preference
             android:key="pref_license"
             android:persistent="false"

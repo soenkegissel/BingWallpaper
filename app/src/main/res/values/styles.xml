@@ -13,13 +13,19 @@
 
     <!--Fullscreen-->
     <style name="AppTheme.Fullscreen" parent="NoActionBar">
-        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
     <style name="AppTheme.Settings" parent="AppTheme">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+        false
+        true
+        @style/AppTheme.actionBarStyle</style>
+
+    <style name="AppTheme.actionBarStyle">
+        ?attr/colorPrimary
+        72dp
+        72dp
     </style>
 
 </resources>

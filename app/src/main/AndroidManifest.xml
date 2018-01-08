@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="me.liaoheng.bingwallpaper">
+    package="com.rucksack.dailywallpaper">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,7 +19,6 @@
             android:theme="@style/AppTheme.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -33,7 +32,7 @@
 
         <receiver android:name=".service.AutoSetWallpaperBroadcastReceiver">
             <intent-filter>
-                <action android:name="me.liaoheng.bingwallpaper.alarm.task_schedule" />
+                <action android:name="com.rucksack.dailywallpaper.alarm.task_schedule" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
