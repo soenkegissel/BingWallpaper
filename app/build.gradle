@@ -2,17 +2,15 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
-
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion 19
+        targetSdkVersion 26
         applicationId "com.rucksack.dailywallpaper"
-        versionCode 3
-        versionName "1.0.0.2"
+        versionCode 4
+        versionName '1.0.0.3'
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -23,9 +21,6 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
-    }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
@@ -36,6 +31,8 @@ android {
         variant.outputs.all {
             outputFileName = "${variant.name}-${variant.versionName}.apk"
         }
+    }
+    productFlavors {
     }
 }
 
@@ -48,7 +45,9 @@ dependencies {
     implementation deps.cardviewv7
     implementation deps.design
     implementation 'com.android.support:palette-v7:27.0.1'
+    implementation 'com.android.support:animated-vector-drawable:27.0.1'
     implementation 'com.android.support:customtabs:27.0.1'
+
     implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true
     }
