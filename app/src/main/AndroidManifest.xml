@@ -30,7 +30,8 @@
             android:name=".ui.LicenseActivity"
             android:label="@string/open_source_license" />
 
-        <receiver android:name=".service.AutoSetWallpaperBroadcastReceiver">
+        <receiver android:name=".service.AutoSetWallpaperBroadcastReceiver"
+            android:permission="">
             <intent-filter>
                 <action android:name="com.rucksack.dailywallpaper.alarm.task_schedule" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
