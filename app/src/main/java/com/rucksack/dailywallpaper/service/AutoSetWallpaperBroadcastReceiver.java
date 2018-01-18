@@ -37,18 +37,13 @@ public class AutoSetWallpaperBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (NetworkUtils.isConnectedOrConnecting(context)) {
+        if (BingWallpaperUtils.isConnectedOrConnecting(context)) {
             if (BingWallpaperUtils.getOnlyWifi(context)) {
                 if (!NetworkUtils.isWifiConnected(context)) {
                     return;
                 }
             }
-            Intent intent1 = new Intent(context, BingWallpaperIntentService.class);
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                context.startForegroundService(intent1);
-            }else{
-                context.startService(intent1);
-            }
+            BingWallpaperIntentService.start(context,BingWallpaperUtils.getAutoModeValue(context));
         }
     }
 }

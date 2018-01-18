@@ -41,6 +41,7 @@ public class SettingsActivity extends com.fnp.materialpreferences.PreferenceActi
     }
 
     public static final String PREF_SET_WALLPAPER_RESOLUTION = "pref_set_wallpaper_resolution";
+    public static final String PREF_SET_WALLPAPER_AUTO_MODE = "pref_set_wallpaper_auto_mode";
     public static final String PREF_SET_WALLPAPER_DAY_FULLY_AUTOMATIC_UPDATE = "pref_set_wallpaper_day_fully_automatic_update";
     public static final String PREF_SET_WALLPAPER_DAY_AUTO_UPDATE = "pref_set_wallpaper_day_auto_update";
     public static final String PREF_SET_WALLPAPER_DAY_AUTO_UPDATE_TIME = "pref_set_wallpaper_day_auto_update_time";
@@ -57,20 +58,36 @@ public class SettingsActivity extends com.fnp.materialpreferences.PreferenceActi
         }
 
         ListPreference mResolutionListPreference;
+        ListPreference mModeTypeListPreference;
         TimePreference mTimePreference;
         CheckBoxPreference mDayUpdatePreference;
         CheckBoxPreference mAutoUpdatePreference;
+        Preference mLogPreference;
+//        private int openLogCount;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            VersionPreference version = (VersionPreference) findPreference("pref_version");
+            Preference version = findPreference("pref_version");
+            mLogPreference = findPreference(PREF_SET_WALLPAPER_LOG);
             try {
                 String versionName = AppUtils.getVersionInfo(getActivity()).versionName;
-                version.setVersion(versionName);
+                version.setSummary(versionName);
             } catch (SystemException e) {
                 L.Log.w(TAG, e);
             }
+
+//            version.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//                @Override
+//                public boolean onPreferenceClick(Preference preference) {
+//                    openLogCount++;
+//                    if (openLogCount >= 5) {
+//                        openLogCount = 0;
+//                        ((PreferenceCategory) findPreference("pref_other_group")).addPreference(mLogPreference);
+//                    }
+//                    return true;
+//                }
+//            });
             Preference licenses = findPreference("pref_license");
             licenses.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
@@ -79,10 +96,12 @@ public class SettingsActivity extends com.fnp.materialpreferences.PreferenceActi
                     return false;
                 }
             });
-            ((PreferenceCategory) findPreference("pref_other_group")).removePreference(findPreference(PREF_SET_WALLPAPER_LOG));
+//            ((PreferenceCategory) findPreference("pref_other_group")).removePreference(mLogPreference);
 
             mResolutionListPreference = (ListPreference) findPreference(
                     PREF_SET_WALLPAPER_RESOLUTION);
+            mModeTypeListPreference = (ListPreference) findPreference(
+                    PREF_SET_WALLPAPER_AUTO_MODE);
             mDayUpdatePreference = (CheckBoxPreference) findPreference(
                     PREF_SET_WALLPAPER_DAY_AUTO_UPDATE);
             mTimePreference = (TimePreference) findPreference(
@@ -90,6 +109,7 @@ public class SettingsActivity extends com.fnp.materialpreferences.PreferenceActi
             mAutoUpdatePreference = (CheckBoxPreference) findPreference(PREF_SET_WALLPAPER_DAY_FULLY_AUTOMATIC_UPDATE);
 
             mResolutionListPreference.setSummary(BingWallpaperUtils.getResolution(getActivity()));
+            mModeTypeListPreference.setSummary(BingWallpaperUtils.getAutoMode(getActivity()));
 
             LocalTime localTime = BingWallpaperUtils.getDayUpdateTime(getActivity());
 
@@ -110,6 +130,9 @@ public class SettingsActivity extends com.fnp.materialpreferences.PreferenceActi
             switch (key) {
                 case PREF_SET_WALLPAPER_RESOLUTION:
                     mResolutionListPreference.setSummary(mResolutionListPreference.getEntry());
+                    break;
+                case PREF_SET_WALLPAPER_AUTO_MODE:
+                    mModeTypeListPreference.setSummary(mModeTypeListPreference.getEntry());
                     break;
                 case PREF_SET_WALLPAPER_DAY_FULLY_AUTOMATIC_UPDATE:
                     if (mAutoUpdatePreference.isChecked()) {
@@ -144,7 +167,7 @@ public class SettingsActivity extends com.fnp.materialpreferences.PreferenceActi
                     CheckBoxPreference logPreference = (CheckBoxPreference) findPreference(
                             PREF_SET_WALLPAPER_LOG);
                     if (logPreference.isChecked()) {
-                        LogDebugFileUtils.get().init("log.txt");
+                        LogDebugFileUtils.get().init();
                         LogDebugFileUtils.get().open();
                     } else {
                         LogDebugFileUtils.get().clearFile();

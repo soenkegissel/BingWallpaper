@@ -30,8 +30,7 @@
             android:name=".ui.LicenseActivity"
             android:label="@string/open_source_license" />
 
-        <receiver android:name=".service.AutoSetWallpaperBroadcastReceiver"
-            android:permission="">
+        <receiver android:name=".service.AutoSetWallpaperBroadcastReceiver">
             <intent-filter>
                 <action android:name="com.rucksack.dailywallpaper.alarm.task_schedule" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -46,6 +45,11 @@
             android:name=".service.JobSchedulerDaemonService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <meta-data
+            android:name="com.rucksack.dailywallpaper.util.GlideModule"
+            android:value="GlideModule"/>
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
     </application>
 
 </manifest>

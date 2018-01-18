@@ -5,8 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
@@ -18,15 +22,16 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.util.AndroidException;
 import android.util.AndroidRuntimeException;
 import android.util.DisplayMetrics;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.ImageViewTarget;
+import com.github.clans.fab.FloatingActionMenu;
 import com.github.liaoheng.common.util.BitmapUtils;
 import com.github.liaoheng.common.util.L;
 import com.github.liaoheng.common.util.NetworkUtils;
@@ -44,7 +49,10 @@ import com.rucksack.dailywallpaper.model.BingWallpaperImage;
 import com.rucksack.dailywallpaper.model.BingWallpaperState;
 import com.rucksack.dailywallpaper.service.BingWallpaperIntentService;
 import com.rucksack.dailywallpaper.util.BingWallpaperUtils;
+import com.rucksack.dailywallpaper.util.LogDebugFileUtils;
 import com.rucksack.dailywallpaper.util.TasksUtils;
+
+import me.zhanghai.android.systemuihelper.SystemUiHelper;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -69,6 +77,8 @@ public class MainActivity extends BaseActivity
     DrawerLayout mDrawerLayout;
     @BindView(R.id.navigation_drawer)
     NavigationView mNavigationView;
+    @BindView(R.id.bing_wallpaper_set_menu)
+    FloatingActionMenu mSetWallpaperActionMenu;
 
     private WallpaperBroadcastReceiver mWallpaperBroadcastReceiver;
     //private SystemUiHelper mSystemUiHelper;
@@ -111,7 +121,7 @@ public class MainActivity extends BaseActivity
     }
 
     private void getBingWallpaper() {
-        if (!NetworkUtils.isConnectedOrConnecting(getApplicationContext())) {
+        if (!BingWallpaperUtils.isConnectedOrConnecting(getApplicationContext())) {
             UIUtils.showToast(getApplicationContext(), getString(R.string.network_unavailable));
             return;
         }
@@ -140,16 +150,22 @@ public class MainActivity extends BaseActivity
                 });
     }
 
-    @BindView(R.id.bing_wallpaper_set)
-    FloatingActionButton setWallpaperBtn;
-
-    @OnClick(R.id.bing_wallpaper_set)
-    void setWallpaper() {
+    /**
+     * @param type 0. both , 1. home , 2. lock
+     */
+    private void setWallpaper(int type) {
         if (isRun) {
             UIUtils.showSnack(this, R.string.set_wallpaper_running);
             return;
         }
-        startService(new Intent(this, BingWallpaperIntentService.class));
+        if (!BingWallpaperUtils.isConnectedOrConnecting(this)) {
+            UIUtils.showSnack(this, R.string.network_unavailable);
+            if (BingWallpaperUtils.isEnableLog(getApplicationContext())) {
+                LogDebugFileUtils.get().i(TAG, getString(R.string.network_unavailable));
+            }
+            return;
+        }
+        BingWallpaperIntentService.start(this, type);
     }
 
     @Override
@@ -188,7 +204,7 @@ public class MainActivity extends BaseActivity
             if (mCurBingWallpaperImage != null) {
                 try {
                     String url = mCurBingWallpaperImage.getCopyrightlink();
-                    if (!ValidateUtils.isWebUrl(url)) {// ru
+                    if (!ValidateUtils.isWebUrl(url)) {
                         url = "https://www.bing.com";
                     }
                     new CustomTabsIntent.Builder()
@@ -224,11 +240,11 @@ public class MainActivity extends BaseActivity
                 } else if (BingWallpaperState.SUCCESS.equals(state)) {
                     isRun = false;
                     dismissSwipeRefreshLayout();
-                    UIUtils.showSnack(MainActivity.this, R.string.set_wallpaper_success);
+                    UIUtils.showToast(getApplicationContext(), getString(R.string.set_wallpaper_success));
                 } else if (BingWallpaperState.FAIL.equals(state)) {
                     isRun = false;
                     dismissSwipeRefreshLayout();
-                    UIUtils.showSnack(MainActivity.this, R.string.set_wallpaper_failure);
+                    UIUtils.showToast(getApplicationContext(), getString(R.string.set_wallpaper_failure));
                 }
             }
         }
@@ -258,9 +274,47 @@ public class MainActivity extends BaseActivity
                                 int lightVibrantSwatch = palette.getVibrantColor(ContextCompat
                                         .getColor(MainActivity.this, R.color.colorAccent));
 
-                                setWallpaperBtn.setBackgroundTintList(
-                                        ColorStateList.valueOf(lightMutedSwatch));
-                                setWallpaperBtn.setRippleColor(lightVibrantSwatch);
+                                mSetWallpaperActionMenu.removeAllMenuButtons();
+
+                                mSetWallpaperActionMenu.setMenuButtonColorNormal(lightMutedSwatch);
+                                mSetWallpaperActionMenu.setMenuButtonColorPressed(lightMutedSwatch);
+                                mSetWallpaperActionMenu.setMenuButtonColorRipple(lightVibrantSwatch);
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    addActionButton(lightMutedSwatch, lightVibrantSwatch, getString(R.string.set_wallpaper_auto_mode_home), R.drawable.ic_home_white_24dp, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            setWallpaper(1);
+                                            mSetWallpaperActionMenu.close(true);
+                                        }
+                                    });
+
+                                    addActionButton(lightMutedSwatch, lightVibrantSwatch, getString(R.string.set_wallpaper_auto_mode_lock), R.drawable.ic_lock_white_24dp, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            setWallpaper(2);
+                                            mSetWallpaperActionMenu.close(true);
+                                        }
+                                    });
+
+                                    addActionButton(lightMutedSwatch, lightVibrantSwatch, getString(R.string.set_wallpaper_auto_mode_both), R.drawable.ic_smartphone_white_24dp, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            setWallpaper(0);
+                                            mSetWallpaperActionMenu.close(true);
+                                        }
+                                    });
+                                } else {
+                                    mSetWallpaperActionMenu.setOnMenuButtonClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            setWallpaper(0);
+                                        }
+                                    });
+                                }
+
+
+                                mSetWallpaperActionMenu.showMenu(true);
                             }
                         });
 
@@ -269,6 +323,19 @@ public class MainActivity extends BaseActivity
             }
         });
 
+    }
+
+    private void addActionButton(@ColorInt int lightMutedSwatch, @ColorInt int lightVibrantSwatch, String text, @DrawableRes int resId, View.OnClickListener listener) {
+        com.github.clans.fab.FloatingActionButton actionButton = new com.github.clans.fab.FloatingActionButton(getActivity());
+        actionButton.setLabelText(text);
+        actionButton.setColorNormal(lightMutedSwatch);
+        actionButton.setColorPressed(lightMutedSwatch);
+        actionButton.setColorRipple(lightVibrantSwatch);
+        actionButton.setImageResource(resId);
+        actionButton.setButtonSize(com.github.clans.fab.FloatingActionButton.SIZE_MINI);
+        mSetWallpaperActionMenu.addMenuButton(actionButton);
+        actionButton.setLabelColors(lightMutedSwatch, lightMutedSwatch, lightVibrantSwatch);
+        actionButton.setOnClickListener(listener);
     }
 
     @Override

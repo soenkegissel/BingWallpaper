@@ -6,6 +6,10 @@ import android.text.TextUtils;
 import com.github.liaoheng.common.util.FileUtils;
 import com.github.liaoheng.common.util.L;
 import com.github.liaoheng.common.util.SystemException;
+
+import org.apache.commons.io.IOUtils;
+import org.joda.time.DateTime;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,17 +28,19 @@ public class LogDebugFileUtils {
     private static final String TAG = LogDebugFileUtils.class.getSimpleName();
 
     public final static String LEVEL_VERBOSE = " VERBOSE ";
-    public final static String LEVEL_DEBUG   = " DEBUG ";
-    public final static String LEVEL_INFO    = " INFO ";
-    public final static String LEVEL_WARN    = " WARN ";
-    public final static String LEVEL_ERROR   = " ERROR ";
+    public final static String LEVEL_DEBUG = " DEBUG ";
+    public final static String LEVEL_INFO = " INFO ";
+    public final static String LEVEL_WARN = " WARN ";
+    public final static String LEVEL_ERROR = " ERROR ";
 
-    @StringDef({ LEVEL_VERBOSE, LEVEL_ERROR, LEVEL_WARN, LEVEL_DEBUG,
-                 LEVEL_INFO }) @Retention(RetentionPolicy.SOURCE) public @interface LevelFlags {
+    @StringDef({LEVEL_VERBOSE, LEVEL_ERROR, LEVEL_WARN, LEVEL_DEBUG,
+            LEVEL_INFO})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LevelFlags {
     }
 
     private static final String DEFAULT_FILE_NAME = "debug_log.txt";
-    private              File   mLogFile          = new File(
+    private File mLogFile = new File(
             Environment.getExternalStorageDirectory(), DEFAULT_FILE_NAME);
     private static LogDebugFileUtils instance;
 
@@ -57,7 +63,7 @@ public class LogDebugFileUtils {
     }
 
     public void init(File logFile) {
-        if (logFile==null){
+        if (logFile == null) {
             return;
         }
         mLogFile = logFile;
@@ -76,12 +82,13 @@ public class LogDebugFileUtils {
             }
             return tempPath;
         } catch (IOException e) {
-            throw new SystemException("文件创建失败！", e);
+            throw new SystemException("create file failure", e);
         }
     }
+
     public void init(String fileName) {
         try {
-            File log = FileUtils.createCacheSDAndroidDirectory("Log");
+            File log = FileUtils.createCacheSDAndroidDirectory("log");
             if (TextUtils.isEmpty(fileName)) {
                 fileName = DEFAULT_FILE_NAME;
             }
@@ -162,7 +169,7 @@ public class LogDebugFileUtils {
             IOUtils.write(stencil, mFileOutputStream);
             if (throwable != null) {
                 IOUtils.write("\n", mFileOutputStream);
-                throwable.printStackTrace( new PrintStream(mFileOutputStream));
+                throwable.printStackTrace(new PrintStream(mFileOutputStream));
                 mFileOutputStream.flush();
             }
             IOUtils.write("\n", mFileOutputStream);

@@ -38,12 +38,7 @@ public class JobSchedulerDaemonService extends JobService {
                 //每天成功执行一次
                 if (TasksUtils.isToDaysDo(1, BingWallpaperIntentService.FLAG_SET_WALLPAPER_STATE)) {
                     L.Log.i(TAG, "isToDaysDo :true");
-                    Intent intent1 = new Intent(getApplicationContext(), BingWallpaperIntentService.class);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(intent1);
-                    } else {
-                        startService(intent1);
-                    }
+                    BingWallpaperIntentService.start(getApplicationContext(), BingWallpaperUtils.getAutoModeValue(getApplicationContext()));
                 } else {
                     L.Log.i(TAG, "isToDaysDo :false");
                 }
@@ -64,7 +59,7 @@ public class JobSchedulerDaemonService extends JobService {
         Message message = new Message();
         message.what = 1;
         message.obj = params;
-        mHandler.sendMessageDelayed(message, 3000);
+        mHandler.sendMessageDelayed(message, 2000);
 
         return true;
     }

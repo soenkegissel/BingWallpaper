@@ -2,25 +2,45 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
+    signingConfigs {
+        release {
+        }
+    }
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 26
         applicationId "com.rucksack.dailywallpaper"
-        versionCode 5
-        versionName '1.1.0.0'
+        versionCode 9
+        versionName '1.1.0.4'
+        // If you do enable multidex, you must also set
+        // minSdkVersion to 21 or higher.
+        multiDexEnabled false
+        flavorDimensions "default"
+    }
+    dexOptions {
+        preDexLibraries true
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         debug {
+            ext.enableCrashlytics = false
             applicationIdSuffix '.debug'
         }
     }
-
+    productFlavors {
+        amazon {
+            applicationIdSuffix ".amazon"
+            versionNameSuffix "-amazon"
+            signingConfig signingConfigs.release
+        }
+        google { }
+    }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
@@ -32,41 +52,40 @@ android {
             outputFileName = "${variant.name}-${variant.versionName}.apk"
         }
     }
-    productFlavors {
-    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     debugImplementation 'junit:junit:4.12'
     //android system
-    implementation deps.supportv4
-    implementation deps.appcompatv7
-    implementation deps.cardviewv7
-    implementation deps.design
-    implementation 'com.android.support:palette-v7:27.0.1'
-    implementation 'com.android.support:animated-vector-drawable:27.0.1'
-    implementation 'com.android.support:customtabs:27.0.1'
+    implementation 'com.android.support:support-v4:27.0.2'
+    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.android.support:cardview-v7:27.0.2'
+    implementation 'com.android.support:design:27.0.2'
+    implementation 'com.android.support:palette-v7:27.0.2'
+    implementation 'com.android.support:animated-vector-drawable:27.0.2'
+    implementation 'com.android.support:customtabs:27.0.2'
     implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true
     }
     implementation 'com.google.firebase:firebase-core:11.8.0'
     //View "injection" library:https://github.com/JakeWharton/butterknife
-    implementation 'com.jakewharton:butterknife:8.6.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     implementation 'com.google.code.gson:gson:2.8.0'
-    implementation deps.glide
-    implementation deps.glide_okhttp3_integration
-    implementation deps.okhttp
+    implementation 'com.github.bumptech.glide:glide:3.8.0'
+    //annotationProcessor 'com.github.bumptech.glide:compiler:3.8.0'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.8.0'
-    implementation deps.retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
-    implementation deps.retrofit_adapter_rxjava
-    implementation deps.logger
-    implementation deps.rxandroid
-    implementation deps.rxjava
-    implementation deps.rxlifecycle
-    implementation deps.rxlifecycle_android
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.3.0'
+    implementation 'com.orhanobut:logger:1.8'
+    implementation 'io.reactivex:rxandroid:1.2.1'
+    implementation 'io.reactivex:rxjava:1.3.0'
+    implementation 'com.trello:rxlifecycle:1.0'
+    implementation 'com.trello:rxlifecycle-android:1.0'
     //https://github.com/ferrannp/material-preferences
     implementation 'com.fnp:material-preferences:0.1.4'
     //https://github.com/DreaminginCodeZH/SystemUiHelper
@@ -74,7 +93,11 @@ dependencies {
     //https://github.com/yshrsmz/LicenseAdapter
     implementation 'net.yslibrary.licenseadapter:licenseadapter:1.4.0'
     //https://github.com/H07000223/FlycoSystemBar
-    implementation 'com.flyco.systembar:FlycoSystemBar_Lib:1.0.0'
-    implementation 'com.github.liaoheng:common-core:0.0.5-SNAPSHOT'
+    compile 'com.flyco.systembar:FlycoSystemBar_Lib:1.0.0'
+    //https://github.com/Clans/FloatingActionButton
+    compile 'com.github.clans:fab:1.6.4'
+    //https://github.com/DreaminginCodeZH/SystemUiHelper
+    compile 'me.zhanghai.android.systemuihelper:library:1.0.0'
+    compile 'com.github.liaoheng:common-core:0.0.5-SNAPSHOT'
 }
 apply plugin: 'com.google.gms.google-services'

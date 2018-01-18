@@ -18,14 +18,8 @@
     </style>
 
     <style name="AppTheme.Settings" parent="AppTheme">
-        false
-        true
-        @style/AppTheme.actionBarStyle</style>
-
-    <style name="AppTheme.actionBarStyle">
-        ?attr/colorPrimary
-        72dp
-        72dp
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
 </resources>

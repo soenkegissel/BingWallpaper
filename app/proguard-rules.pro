@@ -24,3 +24,13 @@
 -keep class com.fasterxml.jackson.** { *; }
 -dontwarn org.codehaus.**
 -keep class org.codehaus.** { *; }
+
+-keep class rx.** { *; }
+-keepclassmembers class rx.** { *; }
+
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public class * extends com.bumptech.glide.module.AppGlideModule
+-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}

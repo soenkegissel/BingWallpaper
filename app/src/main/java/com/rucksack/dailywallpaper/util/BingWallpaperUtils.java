@@ -4,12 +4,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import com.github.liaoheng.common.util.NetworkUtils;
 import com.github.liaoheng.common.util.Utils;
 
 import org.joda.time.DateTime;
@@ -59,6 +61,23 @@ public class BingWallpaperUtils {
                 .getString(SettingsActivity.PREF_SET_WALLPAPER_RESOLUTION, "0");
 
         return names[Integer.parseInt(resolution)];
+    }
+
+    public static int getAutoModeValue(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(context);
+
+        return Integer.parseInt(sharedPreferences
+                .getString(SettingsActivity.PREF_SET_WALLPAPER_AUTO_MODE, "0"));
+    }
+
+    public static String getAutoMode(Context context) {
+        String[] names = context.getResources()
+                .getStringArray(R.array.pref_set_wallpaper_auto_mode_name);
+
+        int value = getAutoModeValue(context);
+
+        return names[value];
     }
 
     public static String getUrl() {
@@ -122,4 +141,22 @@ public class BingWallpaperUtils {
         pm.setComponentEnabledSetting(componentName, newState, PackageManager.DONT_KILL_APP);
     }
 
+    /**
+     * 判断有无网络正在连接中（查找网络、校验、获取IP等）。
+     *
+     * @return boolean 不管wifi，还是mobile net，只有当前在连接状态（可有效传输数据）才返回true,反之false。
+     */
+    public static boolean isConnectedOrConnecting(Context context) {
+        if (NetworkUtils.isConnected(context)) {
+            NetworkInfo[] nets = NetworkUtils.getConnManager(context).getAllNetworkInfo();
+            if (nets != null) {
+                for (NetworkInfo net : nets) {
+                    if (net.isConnectedOrConnecting()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
