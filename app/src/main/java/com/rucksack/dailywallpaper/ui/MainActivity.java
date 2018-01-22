@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.ColorStateList;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,7 +11,6 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -24,17 +21,22 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.util.AndroidRuntimeException;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
+import com.amazon.device.ads.AdLayout;
+import com.amazon.device.ads.AdRegistration;
+import com.amazon.device.ads.AdTargetingOptions;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.github.clans.fab.FloatingActionMenu;
 import com.github.liaoheng.common.util.BitmapUtils;
 import com.github.liaoheng.common.util.L;
-import com.github.liaoheng.common.util.NetworkUtils;
 import com.github.liaoheng.common.util.UIUtils;
 import com.github.liaoheng.common.util.ValidateUtils;
 
@@ -42,7 +44,17 @@ import java.net.SocketTimeoutException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import com.rucksack.dailywallpaper.BuildConfig;
 import com.rucksack.dailywallpaper.R;
 import com.rucksack.dailywallpaper.data.BingWallpaperNetworkClient;
 import com.rucksack.dailywallpaper.model.BingWallpaperImage;
@@ -52,7 +64,6 @@ import com.rucksack.dailywallpaper.util.BingWallpaperUtils;
 import com.rucksack.dailywallpaper.util.LogDebugFileUtils;
 import com.rucksack.dailywallpaper.util.TasksUtils;
 
-import me.zhanghai.android.systemuihelper.SystemUiHelper;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -85,10 +96,21 @@ public class MainActivity extends BaseActivity
     private BingWallpaperImage mCurBingWallpaperImage;
     private boolean isRun;
 
+    //Ads
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+    private static final String BANNER_ADS_ENABLED_KEY = "dailywallpaper_banner_ads_enabled";
+    private AdView mAdView;
+    private AdLayout amazonAdView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+
+        mAdView = new AdView(this);
+        amazonAdView = new AdLayout(this);
+
         ButterKnife.bind(this);
         if (TasksUtils.isOne()) {
             TasksUtils.markOne();
@@ -116,8 +138,98 @@ public class MainActivity extends BaseActivity
                 }
             }
         });
-
         getBingWallpaper();
+        getRemoteConfig();
+    }
+
+    private void getRemoteConfig() {
+        // Create a Remote Config Setting to enable developer mode, which you can use to increase
+        // the number of fetches available per hour during development. See Best Practices in the
+        // README for more information.
+        // [START enable_dev_mode]
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(BuildConfig.DEBUG)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+        // [END enable_dev_mode]
+        // Set default Remote Config parameter values. An app uses the in-app default values, and
+        // when you need to adjust those defaults, you set an updated value for only the values you
+        // want to change in the Firebase console. See Best Practices in the README for more
+        // information.
+        // [START set_default_values]
+        mFirebaseRemoteConfig.setDefaults(R.xml.ads);
+        // [END set_default_values]
+
+        long cacheExpiration = 28800; // 8 hour in seconds.
+        // If your app is using developer mode, cacheExpiration is set to 0, so each fetch will
+        // retrieve values from the service.
+        if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
+            cacheExpiration = 0;
+        }
+
+        Log.d(TAG, "Ads enabled by default? "+mFirebaseRemoteConfig.getBoolean(BANNER_ADS_ENABLED_KEY));
+        mFirebaseRemoteConfig.fetch(cacheExpiration)
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // After config data is successfully fetched, it must be activated before newly fetched
+                            // values are returned.
+                            mFirebaseRemoteConfig.activateFetched();
+                            Log.d(TAG, "Ads enabled by fetched remote config? "+mFirebaseRemoteConfig.getBoolean(BANNER_ADS_ENABLED_KEY));
+                        }
+                    }
+                });
+        getMobileAds(mFirebaseRemoteConfig.getBoolean(BANNER_ADS_ENABLED_KEY));
+    }
+
+    private void getMobileAds(boolean isBannerAdEnabled) {
+        Log.d(TAG, "Ads trace: isBannerAdEnabled? "+isBannerAdEnabled);
+            //Gefüllt durch ProductFlavors
+            if (BuildConfig.GOOGLE) {
+                MobileAds.initialize(this,
+                        "ca-app-pub-7250949786873174~9815294391");
+
+                final View adContainer = findViewById(R.id.adMobView);
+
+                AdRequest adRequest = new AdRequest.Builder().build();
+                mAdView.setAdSize(AdSize.SMART_BANNER);
+
+                if (BuildConfig.DEBUG) {
+                    //DebugAdUnitId
+                    mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+                    mAdView.loadAd(adRequest);
+                } else {
+                    //ReleaseAdUnitId
+                    mAdView.setAdUnitId("ca-app-pub-7250949786873174/1622600294");
+                    if(isBannerAdEnabled)
+                        mAdView.loadAd(adRequest);
+                }
+
+                mAdView.setAdListener(new AdListener() {
+                    @Override
+                    public void onAdLoaded() {
+                        // Code to be executed when an ad finishes loading.
+                        ((RelativeLayout) adContainer).addView(mAdView);
+                    }
+                });
+
+            } else {
+                //AMAZON
+                AdRegistration.setAppKey("ef20ac0833c44488b5e98c5f6c54db5d");
+
+                amazonAdView = findViewById(R.id.amazonAdview);
+                AdTargetingOptions adOptions = new AdTargetingOptions();
+                if (BuildConfig.DEBUG) {
+                    AdRegistration.enableLogging(true);
+                    AdRegistration.enableTesting(true);
+                    this.amazonAdView.loadAd(adOptions); // Retrieves an ad on background thread
+                }
+                else{
+                    if(isBannerAdEnabled)
+                        this.amazonAdView.loadAd(adOptions); // Retrieves an ad on background thread
+                }
+            }
     }
 
     private void getBingWallpaper() {
@@ -355,5 +467,6 @@ public class MainActivity extends BaseActivity
     protected void onDestroy() {
         UIUtils.cancelToast();
         super.onDestroy();
+        if(!BuildConfig.GOOGLE) this.amazonAdView.destroy();
     }
 }

@@ -12,11 +12,11 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         applicationId "com.rucksack.dailywallpaper"
-        versionCode 9
-        versionName '1.1.0.4'
+        versionCode 13
+        versionName '1.1.1.3'
         // If you do enable multidex, you must also set
         // minSdkVersion to 21 or higher.
-        multiDexEnabled false
+        multiDexEnabled true
         flavorDimensions "default"
     }
     dexOptions {
@@ -38,8 +38,12 @@ android {
             applicationIdSuffix ".amazon"
             versionNameSuffix "-amazon"
             signingConfig signingConfigs.release
+            buildConfigField 'boolean', 'GOOGLE', "false"
         }
-        google { }
+        google {
+            buildConfigField 'boolean', 'GOOGLE', "true"
+            signingConfig signingConfigs.release
+        }
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
@@ -50,6 +54,12 @@ android {
     android.applicationVariants.all { variant ->
         variant.outputs.all {
             outputFileName = "${variant.name}-${variant.versionName}.apk"
+        }
+    }
+    sourceSets {
+        googleDebug {
+            java.srcDirs = ['src/googleDebug/java', 'src/amazonDebug/java/']
+            res.srcDirs = ['src/googleDebug/res', 'src/main/res/2']
         }
     }
 }
@@ -69,6 +79,9 @@ dependencies {
         transitive = true
     }
     implementation 'com.google.firebase:firebase-core:11.8.0'
+    implementation 'com.google.firebase:firebase-config:11.8.0'
+    implementation 'com.google.firebase:firebase-ads:11.8.0'
+    implementation 'com.amazon.android:mobile-ads:5.+'
     //View "injection" library:https://github.com/JakeWharton/butterknife
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'

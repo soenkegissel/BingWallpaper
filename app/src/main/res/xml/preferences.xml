@@ -8,7 +8,7 @@
             android:widgetLayout="@layout/mp_preference_switch" />
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="pref_set_wallpaper_day_fully_automatic_update"
             android:summary="@string/pref_auto_update_check_every_hour"
             android:title="@string/pref_auto_update_everyday"
