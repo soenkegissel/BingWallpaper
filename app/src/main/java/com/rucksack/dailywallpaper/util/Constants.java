@@ -6,7 +6,7 @@ package com.rucksack.dailywallpaper.util;
  */
 public interface Constants {
 
-    String PROJECT_NAME          = "DailyWallpaper";
+    String PROJECT_NAME          = "BingWallpaper";
 
     String DISK_CACHE_DIR        = "imgCache";
     String HTTP_CACHE_DIR        = "httpCache";

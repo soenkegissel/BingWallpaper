@@ -3,6 +3,7 @@ package com.rucksack.dailywallpaper.util;
 import android.os.Environment;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
+
 import com.github.liaoheng.common.util.FileUtils;
 import com.github.liaoheng.common.util.L;
 import com.github.liaoheng.common.util.SystemException;
@@ -16,11 +17,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import org.apache.commons.io.IOUtils;
-import org.joda.time.DateTime;
 
 /**
  * 不带system log
+ *
  * @author liaoheng
  * @version 2016-09-22 16:26
  */

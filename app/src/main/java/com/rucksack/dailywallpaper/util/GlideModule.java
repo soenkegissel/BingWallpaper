@@ -6,8 +6,6 @@ import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.github.liaoheng.common.util.FileUtils;
 import com.github.liaoheng.common.util.SystemException;
-import com.rucksack.dailywallpaper.util.Constants;
-
 import java.io.File;
 
 /**

@@ -4,22 +4,30 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
+import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
 import com.github.liaoheng.common.util.NetworkUtils;
 import com.github.liaoheng.common.util.Utils;
+import com.rucksack.dailywallpaper.util.Constants;
+
+import net.grandcentrix.tray.AppPreferences;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalTime;
 
 import java.util.Locale;
 
-import com.rucksack.dailywallpaper.BuildConfig;
 import com.rucksack.dailywallpaper.R;
 import com.rucksack.dailywallpaper.model.BingWallpaperImage;
 import com.rucksack.dailywallpaper.ui.SettingsActivity;
@@ -51,13 +59,12 @@ public class BingWallpaperUtils {
     }
 
     public static String getResolution(Context context) {
-        SharedPreferences sharedPreferences = PreferenceManager
-                .getDefaultSharedPreferences(context);
+        AppPreferences appPreferences = new AppPreferences(context);
 
         String[] names = context.getResources()
                 .getStringArray(R.array.pref_set_wallpaper_resolution_name);
 
-        String resolution = sharedPreferences
+        String resolution = appPreferences
                 .getString(SettingsActivity.PREF_SET_WALLPAPER_RESOLUTION, "0");
 
         return names[Integer.parseInt(resolution)];
@@ -90,6 +97,11 @@ public class BingWallpaperUtils {
         }
     }
 
+    /**
+     * 定时更新时间
+     *
+     * @return UTC
+     */
     @Nullable
     public static LocalTime getDayUpdateTime(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager
@@ -108,9 +120,15 @@ public class BingWallpaperUtils {
                 null).apply();
     }
 
+    /**
+     * 传入时间的在当前时间后，则改变转入时间到下一天。
+     * @param time Local
+     * @return Local
+     */
     public static DateTime checkTime(LocalTime time) {
         DateTime now = DateTime.now();
-        if (time.isBefore(now.toLocalTime())) {
+        DateTime set = DateTime.now().withTime(time);
+        if (set.toLocalTime().isBefore(now.toLocalTime())) {
             now = now.plusDays(1);
         }
         return new DateTime(now.getYear(), now.getMonthOfYear(), now.getDayOfMonth(),
@@ -118,12 +136,15 @@ public class BingWallpaperUtils {
     }
 
     public static boolean isEnableLog(Context context) {
-        if (!BuildConfig.DEBUG) {
-            return false;
-        }
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(context);
         return sharedPreferences
+                .getBoolean(SettingsActivity.PREF_SET_WALLPAPER_LOG, false);
+    }
+
+    public static boolean isEnableLogProvider(Context context) {
+        AppPreferences appPreferences = new AppPreferences(context);
+        return appPreferences
                 .getBoolean(SettingsActivity.PREF_SET_WALLPAPER_LOG, false);
     }
 
@@ -158,5 +179,54 @@ public class BingWallpaperUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * 获得导航栏的高度
+     *
+     * @see <a href="https://stackoverflow.com/questions/20264268/how-do-i-get-the-height-and-width-of-the-android-navigation-bar-programmatically">stackoverflow</a>
+     */
+    public static int getNavigationBarHeight(Context context) {
+        Resources resources = context.getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            return resources.getDimensionPixelSize(resourceId);
+        }
+        return 0;
+    }
+
+    /**
+     * 判断是否存在导航栏
+     *
+     * @return false if physical, true if virtual
+     * @see <a href="https://stackoverflow.com/questions/16092431/check-for-navigation-bar">stackoverflow</a>
+     */
+    public static boolean isNavigationBar(Context context) {
+        if (isEmulator()) {
+            return true;
+        }
+        Resources resources = context.getResources();
+        int id = resources.getIdentifier("config_showNavigationBar", "bool", "android");
+        if (id > 0) {
+            return resources.getBoolean(id);
+        } else {    // Check for keys
+            boolean hasMenuKey = ViewConfiguration.get(context).hasPermanentMenuKey();
+            boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
+            return !hasMenuKey && !hasBackKey;
+        }
+    }
+
+    /**
+     * @see <a href="https://stackoverflow.com/questions/2799097/how-can-i-detect-when-an-android-application-is-running-in-the-emulator">stackoverflow</a>
+     */
+    public static boolean isEmulator() {
+        return Build.FINGERPRINT.startsWith("generic")
+                || Build.FINGERPRINT.startsWith("unknown")
+                || Build.MODEL.contains("google_sdk")
+                || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Android SDK built for x86")
+                || Build.MANUFACTURER.contains("Genymotion")
+                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
+                || "google_sdk".equals(Build.PRODUCT);
     }
 }

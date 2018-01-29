@@ -1,12 +1,17 @@
 package com.rucksack.dailywallpaper.util;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+
 import com.github.liaoheng.common.util.PreferencesUtils;
 import com.github.liaoheng.common.util.SystemDataException;
 import com.github.liaoheng.common.util.SystemRuntimeException;
+
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
+
+import com.rucksack.dailywallpaper.data.provider.TasksContract;
 
 /**
  * @author liaoheng
@@ -20,8 +25,8 @@ public class TasksUtils {
         mTaskPreferencesUtils = PreferencesUtils.from(TASK_FILE_NAME);
     }
 
-    private final static String TASK_FILE_NAME = "COM_GITHUB_LIAOHENG_COMMON_TASKS";
-    private final static String TASK_ONE       = "TASK_ONE";
+    private final static String TASK_FILE_NAME = "com.github.liaoheng.common_tasks";
+    private final static String TASK_ONE = "task_one";
 
     public static boolean isOne() {
         return mTaskPreferencesUtils.getBoolean(TASK_ONE, true);
@@ -54,17 +59,62 @@ public class TasksUtils {
     }
 
     public static boolean isToDaysDo(int day, String tag) {
-        long data = mTaskPreferencesUtils.getLong(tag, -1);
-        if (data == -1){
+        long date = mTaskPreferencesUtils.getLong(tag, -1);
+        return isToDaysDo(date, day);
+    }
+
+    public static boolean isToDaysDoProvider(Context context, int day, String tag) {
+        Cursor cursor = context.getContentResolver()
+                .query(TasksContract.TaskEntry.CONTENT_URI, null, TasksContract.TaskEntry.COLUMN_TAG + "=?",
+                        new String[] { tag }, null);
+        long date = -1;
+        if (cursor != null && cursor.moveToNext()) {
+            date = cursor.getLong(2);
+        } else {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(TasksContract.TaskEntry.COLUMN_TAG, tag);
+            contentValues.put(TasksContract.TaskEntry.COLUMN_DATE, date);
+            context.getContentResolver().insert(TasksContract.TaskEntry.CONTENT_URI, contentValues);
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return isToDaysDo(date, day);
+    }
+
+    public static boolean isToDaysDo(long date, int day) {
+        if (date == -1) {
             return true;
         }
 
-        DateTime dateTime = new DateTime(data, DateTimeZone.UTC);
-        int days = Days.daysBetween(dateTime.toLocalDate(), DateTime.now().toLocalDate()).getDays();
+        DateTime next = new DateTime(date);
+        DateTime now = DateTime.now();
+        return isToDaysDo(next, now, day);
+    }
+
+    /**
+     * 上一次操作与现在操作的距离，单位天
+     *
+     * @param next local date
+     * @param now local date
+     * @param day 距离，天
+     * @return true，超过或等于@param day
+     */
+    public static boolean isToDaysDo(DateTime next, DateTime now, int day) {
+        int days = Days.daysBetween(next.toLocalDate(), now.toLocalDate()).getDays();
         return days >= day;
     }
 
     public static void markDone(String tag) {
-        mTaskPreferencesUtils.putLong(tag, DateTime.now(DateTimeZone.UTC).getMillis()).apply();
+        mTaskPreferencesUtils.putLong(tag, DateTime.now().getMillis()).apply();
+    }
+
+    public static void markDoneProvider(Context context, String tag) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(TasksContract.TaskEntry.COLUMN_TAG, tag);
+        contentValues.put(TasksContract.TaskEntry.COLUMN_DATE, DateTime.now().getMillis());
+        context.getContentResolver()
+                .update(TasksContract.TaskEntry.CONTENT_URI, contentValues, TasksContract.TaskEntry.COLUMN_TAG + "=?",
+                        new String[] { tag });
     }
 }

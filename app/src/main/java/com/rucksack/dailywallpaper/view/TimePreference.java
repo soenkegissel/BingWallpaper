@@ -10,6 +10,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
 
+import com.github.liaoheng.common.util.ValidateUtils;
+
 import org.joda.time.LocalTime;
 
 /**

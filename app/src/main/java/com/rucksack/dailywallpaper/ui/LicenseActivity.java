@@ -31,7 +31,8 @@ public class LicenseActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_license);
         ButterKnife.bind(this);
-        //SystemBarHelper.tintStatusBar(this, ContextCompat.getColor(this, R.color.colorPrimaryDark), 0);
+        SystemBarHelper
+                .tintStatusBar(this, ContextCompat.getColor(this, R.color.colorPrimaryDark), 0);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setHasFixedSize(true);
@@ -57,6 +58,8 @@ public class LicenseActivity extends BaseActivity {
         licenses.add(Licenses.fromGitHubApacheV2("yshrsmz/LicenseAdapter"));
         licenses.add(Licenses.fromGitHubMIT("H07000223/FlycoSystemBar"));
         licenses.add(Licenses.fromGitHubApacheV2("tbruyelle/RxPermissions"));
+        licenses.add(Licenses.fromGitHubApacheV2("Clans/FloatingActionButton"));
+        licenses.add(Licenses.fromGitHubApacheV2("grandcentrix/tray"));
         licenses.add(Licenses.fromGitHubApacheV2("liaoheng/BingWallpaper"));
 
         LicenseAdapter adapter = new LicenseAdapter(licenses);

@@ -18,6 +18,7 @@ import com.rucksack.dailywallpaper.util.BingWallpaperUtils;
 
 /**
  * 自动更新壁纸守护服务
+ *
  * @author liaoheng
  * @version 2017-10-16 11:55
  */
@@ -28,7 +29,7 @@ public class JobSchedulerDaemonService extends JobService {
     Handler mHandler = new Handler(Looper.myLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            if (NetworkUtils.isConnectedOrConnecting(getApplicationContext())) {
+            if (BingWallpaperUtils.isConnectedOrConnecting(getApplicationContext())) {
                 if (BingWallpaperUtils.getOnlyWifi(getApplicationContext())) {
                     if (!NetworkUtils.isWifiConnected(getApplicationContext())) {
                         L.Log.i(TAG, "isWifiConnected :false");
@@ -36,7 +37,7 @@ public class JobSchedulerDaemonService extends JobService {
                     }
                 }
                 //每天成功执行一次
-                if (TasksUtils.isToDaysDo(1, BingWallpaperIntentService.FLAG_SET_WALLPAPER_STATE)) {
+                if (TasksUtils.isToDaysDoProvider(getApplicationContext(),1, BingWallpaperIntentService.FLAG_SET_WALLPAPER_STATE)) {
                     L.Log.i(TAG, "isToDaysDo :true");
                     BingWallpaperIntentService.start(getApplicationContext(), BingWallpaperUtils.getAutoModeValue(getApplicationContext()));
                 } else {
