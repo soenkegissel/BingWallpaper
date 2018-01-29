@@ -71,7 +71,6 @@
 
         </android.support.design.widget.CoordinatorLayout>
 
-        <!-- Unten stehende ID ist eine TestID, die Richtige wird in MainActivity gesetzt -->
         <RelativeLayout
             android:id="@+id/adMobView"
             android:layout_width="match_parent"
