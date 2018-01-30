@@ -115,7 +115,7 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-/*        getWindow().addFlags(
+/*       getWindow().addFlags(
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);*/
@@ -130,17 +130,17 @@ public class MainActivity extends BaseActivity
             TasksUtils.markOne();
         }
         Toolbar toolbar = UIUtils.findViewById(this, R.id.toolbar);
-        int statusBarHeight = DisplayUtils.getStatusBarHeight(this);
+        /*int statusBarHeight = DisplayUtils.getStatusBarHeight(this);
         ViewGroup.LayoutParams lp = toolbar.getLayoutParams();
         lp.height += statusBarHeight;
         toolbar.setPadding(toolbar.getPaddingLeft(), toolbar.getPaddingTop() + statusBarHeight,
-                toolbar.getPaddingRight(), toolbar.getPaddingBottom());
+                toolbar.getPaddingRight(), toolbar.getPaddingBottom());*/
         setSupportActionBar(toolbar);
         setTitle("");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer_home);
 
-        if (BingWallpaperUtils.isNavigationBar(this)) {
+        /*if (BingWallpaperUtils.isNavigationBar(this)) {
             int navigationBarHeight = BingWallpaperUtils.getNavigationBarHeight(this);
             if (navigationBarHeight > 0) {
                 UIUtils.viewVisible(mBottomView);
@@ -151,7 +151,7 @@ public class MainActivity extends BaseActivity
             ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) mSetWallpaperActionMenu.getLayoutParams();
             layoutParams.bottomMargin = layoutParams.bottomMargin + navigationBarHeight;
             mSetWallpaperActionMenu.setLayoutParams(layoutParams);
-        }
+        }*/
 
         mNavigationView.setNavigationItemSelectedListener(this);
 

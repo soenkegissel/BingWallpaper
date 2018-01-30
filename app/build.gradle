@@ -8,8 +8,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         applicationId "com.rucksack.dailywallpaper"
-        versionCode 14
-        versionName '1.1.1.4'
+        versionCode 17
+        versionName '1.1.2.1'
         // If you do enable multidex, you must also set
         // minSdkVersion to 21 or higher.
         multiDexEnabled true
