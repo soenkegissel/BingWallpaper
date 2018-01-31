@@ -64,6 +64,8 @@ import com.rucksack.dailywallpaper.BuildConfig;
 import com.rucksack.dailywallpaper.R;
 import com.rucksack.dailywallpaper.data.BingWallpaperNetworkClient;
 import com.rucksack.dailywallpaper.helper.FirebaseEventHelper;
+import com.rucksack.dailywallpaper.helper.MobileAdManager;
+import com.rucksack.dailywallpaper.helper.RemoteConfigHelper;
 import com.rucksack.dailywallpaper.model.BingWallpaperImage;
 import com.rucksack.dailywallpaper.model.BingWallpaperState;
 import com.rucksack.dailywallpaper.service.BingWallpaperIntentService;
@@ -107,10 +109,13 @@ public class MainActivity extends BaseActivity
     private boolean isRun;
 
     //Ads
-    private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private static final String BANNER_ADS_ENABLED_KEY = "dailywallpaper_banner_ads_enabled";
-    private AdView mAdView;
-    private AdLayout amazonAdView;
+
+    private static Context appContext;
+
+    public static Context getAppContext() {
+        return appContext;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,10 +125,7 @@ public class MainActivity extends BaseActivity
                         | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);*/
         setContentView(R.layout.activity_main);
-        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 
-        mAdView = new AdView(this);
-        amazonAdView = new AdLayout(this);
 
         ButterKnife.bind(this);
         if (TasksUtils.isOne()) {
@@ -168,129 +170,8 @@ public class MainActivity extends BaseActivity
             }
         });
         getBingWallpaper();
-        getRemoteConfig();
-    }
-
-    private void getRemoteConfig() {
-        // Create a Remote Config Setting to enable developer mode, which you can use to increase
-        // the number of fetches available per hour during development. See Best Practices in the
-        // README for more information.
-        // [START enable_dev_mode]
-        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setDeveloperModeEnabled(BuildConfig.DEBUG)
-                .build();
-        mFirebaseRemoteConfig.setConfigSettings(configSettings);
-        // [END enable_dev_mode]
-        // Set default Remote Config parameter values. An app uses the in-app default values, and
-        // when you need to adjust those defaults, you set an updated value for only the values you
-        // want to change in the Firebase console. See Best Practices in the README for more
-        // information.
-        // [START set_default_values]
-        mFirebaseRemoteConfig.setDefaults(R.xml.ads);
-        // [END set_default_values]
-
-        long cacheExpiration = 28800; // 8 hour in seconds.
-        // If your app is using developer mode, cacheExpiration is set to 0, so each fetch will
-        // retrieve values from the service.
-        if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
-            cacheExpiration = 0;
-        }
-
-        Log.d(TAG, "Ads enabled by default? "+mFirebaseRemoteConfig.getBoolean(BANNER_ADS_ENABLED_KEY));
-        mFirebaseRemoteConfig.fetch(cacheExpiration)
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // After config data is successfully fetched, it must be activated before newly fetched
-                            // values are returned.
-                            mFirebaseRemoteConfig.activateFetched();
-                            Log.d(TAG, "Ads enabled by fetched remote config? "+mFirebaseRemoteConfig.getBoolean(BANNER_ADS_ENABLED_KEY));
-                        }
-                    }
-                });
-        getMobileAds(mFirebaseRemoteConfig.getBoolean(BANNER_ADS_ENABLED_KEY));
-    }
-
-    private void getMobileAds(boolean isBannerAdEnabled) {
-        final String flavor;
-        Log.d(TAG, "Ads trace: isBannerAdEnabled? "+isBannerAdEnabled);
-            //Gefüllt durch ProductFlavors
-            if (BuildConfig.GOOGLE) {
-                flavor = "GOOGLE";
-                Log.d(TAG, "Go Google!");
-                MobileAds.initialize(this,
-                        "ca-app-pub-7250949786873174~9815294391");
-                View adContainer = findViewById(R.id.adMobView);
-                mAdView.setAdSize(AdSize.SMART_BANNER);
-                if (BuildConfig.DEBUG) {
-                    //DebugAdUnitId
-                    mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
-                    ((RelativeLayout)adContainer).addView(mAdView);
-                    AdRequest adRequest = new AdRequest.Builder().build();
-                    mAdView.loadAd(adRequest);
-                } else {
-                    //ReleaseAdUnitId
-                    mAdView.setAdUnitId("ca-app-pub-7250949786873174/1622600294");
-                    if(isBannerAdEnabled) {
-                        ((RelativeLayout) adContainer).addView(mAdView);
-                        AdRequest adRequest = new AdRequest.Builder().build();
-                        mAdView.loadAd(adRequest);
-                    }
-                }
-            } else {
-                //AMAZON
-                flavor = "AMAZON";
-                Log.d(TAG, "Go Amazon!");
-                MobileAds.initialize(this,
-                        "ca-app-pub-7250949786873174~6993144760");
-                View adContainer = findViewById(R.id.adMobView);
-                mAdView.setAdSize(AdSize.SMART_BANNER);
-                if (BuildConfig.DEBUG) {
-                    //DebugAdUnitId
-                    mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
-                    ((RelativeLayout)adContainer).addView(mAdView);
-                    AdRequest adRequest = new AdRequest.Builder().build();
-                    mAdView.loadAd(adRequest);
-                } else {
-                    //ReleaseAdUnitId
-                    mAdView.setAdUnitId("ca-app-pub-7250949786873174/9694850797");
-                    if(isBannerAdEnabled) {
-                        ((RelativeLayout) adContainer).addView(mAdView);
-                        AdRequest adRequest = new AdRequest.Builder().build();
-                        mAdView.loadAd(adRequest);
-                    }
-                }
-
-                mAdView.setAdListener(new AdListener() {
-                    @Override
-                    public void onAdLoaded() {
-                        // Code to be executed when an ad finishes loading.
-                        FirebaseEventHelper.sendEvent(getApplicationContext(), "ads", "adListener-"+flavor, "onAdLoaded");
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(int errorCode) {
-                        // Code to be executed when an ad request fails.
-                        FirebaseEventHelper.sendEvent(getApplicationContext(), "ads", "adListener-"+flavor, "onadFailedtoLoad "+errorCode);
-                    }
-                });
-
-                /*AdRegistration.setAppKey("ef20ac0833c44488b5e98c5f6c54db5d");
-                amazonAdView = findViewById(R.id.amazonAdview);
-                AdTargetingOptions adOptions = new AdTargetingOptions();
-                if (BuildConfig.DEBUG) {
-                    AdRegistration.enableLogging(true);
-                    //AdRegistration.enableTesting(true);
-                    Toast.makeText(this, "You receive an Amazon Ad for Debug", Toast.LENGTH_LONG).show();
-                    this.amazonAdView.loadAd(adOptions); // Retrieves an ad on background thread
-                }
-                else{
-                    if(isBannerAdEnabled)
-                        Toast.makeText(this, "You receive an Amazon Ad for Release", Toast.LENGTH_LONG).show();
-                        this.amazonAdView.loadAd(adOptions); // Retrieves an ad on background thread
-                }*/
-            }
+        MobileAdManager mobileAds = new MobileAdManager(this);
+        mobileAds.get(RemoteConfigHelper.getRemoteConfigBoolean(this, BANNER_ADS_ENABLED_KEY));
     }
 
     private void getBingWallpaper() {

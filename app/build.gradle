@@ -72,6 +72,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.firebase:firebase-config:11.8.0'
     implementation 'com.google.firebase:firebase-ads:11.8.0'
+    implementation 'com.google.firebase:firebase-crash:11.8.0'
     implementation 'com.amazon.android:mobile-ads:5.+'
     //View "injection" library:https://github.com/JakeWharton/butterknife
     implementation 'com.jakewharton:butterknife:8.8.1'
