@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import com.amazon.device.ads.AdLayout;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -23,7 +22,7 @@ public class MobileAdManager {
     private String TAG = MobileAdManager.class.getSimpleName();
     private Activity activity;
     private AdView mAdView;
-    private AdLayout amazonAdView;
+    //private AdLayout amazonAdView;
 
     public MobileAdManager(Activity activity) {
         this.activity = activity;
@@ -31,7 +30,7 @@ public class MobileAdManager {
 
     public void get(boolean isBannerAdEnabled) {
         mAdView = new AdView(activity);
-        amazonAdView = new AdLayout(activity);
+        //amazonAdView = new AdLayout(activity);
         final String flavor;
         Log.d(TAG, "Ads trace: isBannerAdEnabled? "+isBannerAdEnabled);
         //Gefüllt durch ProductFlavors

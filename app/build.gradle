@@ -2,24 +2,28 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
+    signingConfigs {
+        release {
+        }
+    }
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 26
         applicationId "com.rucksack.dailywallpaper"
-        versionCode 17
-        versionName '1.1.2.1'
+        versionCode 18
+        versionName '1.1.2.2'
         // If you do enable multidex, you must also set
         // minSdkVersion to 21 or higher.
         multiDexEnabled true
         flavorDimensions "default"
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         debug {
             ext.enableCrashlytics = false
@@ -72,12 +76,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.firebase:firebase-config:11.8.0'
     implementation 'com.google.firebase:firebase-ads:11.8.0'
-    implementation 'com.google.firebase:firebase-crash:11.8.0'
-    implementation 'com.amazon.android:mobile-ads:5.+'
+    //implementation 'com.google.firebase:firebase-crash:11.8.0'
+    //implementation 'com.amazon.android:mobile-ads:5.8.1.1'
     //View "injection" library:https://github.com/JakeWharton/butterknife
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.google.code.gson:gson:2.8.1'
     implementation 'com.github.bumptech.glide:glide:3.8.0'
     //annotationProcessor 'com.github.bumptech.glide:compiler:3.8.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
@@ -88,27 +92,21 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava:2.3.0'
     implementation 'com.orhanobut:logger:1.8'
     implementation 'io.reactivex:rxandroid:1.2.1'
-    implementation 'io.reactivex:rxjava:1.3.0'
+    implementation 'io.reactivex:rxjava:1.3.1'
     implementation 'com.trello:rxlifecycle:1.0'
     implementation 'com.trello:rxlifecycle-android:1.0'
     //https://github.com/ferrannp/material-preferences
     implementation 'com.fnp:material-preferences:0.1.4'
-
     //https://github.com/DreaminginCodeZH/SystemUiHelper
     implementation 'me.zhanghai.android.systemuihelper:library:1.0.0'
-
     //https://github.com/yshrsmz/LicenseAdapter
     implementation 'net.yslibrary.licenseadapter:licenseadapter:1.4.0'
-
     //https://github.com/H07000223/FlycoSystemBar
-    implementation "com.flyco.systembar:FlycoSystemBar_Lib:1.0.0"
-
+    implementation 'com.flyco.systembar:FlycoSystemBar_Lib:1.0.0'
     //https://github.com/Clans/FloatingActionButton
     implementation 'com.github.clans:fab:1.6.4'
-
     //https://github.com/grandcentrix/tray
     implementation 'net.grandcentrix.tray:tray:0.12.0'
-
     compile 'com.github.liaoheng:common-core:0.0.5-SNAPSHOT'
 }
 apply plugin: 'com.google.gms.google-services'

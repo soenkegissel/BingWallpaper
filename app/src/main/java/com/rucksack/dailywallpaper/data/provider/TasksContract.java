@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
  * @version 2018-01-16 15:43
  */
 public class TasksContract {
-    public static final String CONTENT_AUTHORITY = "me.liaoheng.wallpaper";
+    public static final String CONTENT_AUTHORITY = "com.rucksack.dailywallpaper";
     private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String PATH = "tasks";
 

@@ -20,7 +20,7 @@ import com.rucksack.dailywallpaper.service.AutoSetWallpaperBroadcastReceiver;
 public class BingWallpaperAlarmManager {
 
     private static final String TAG = BingWallpaperAlarmManager.class.getSimpleName();
-    public static final String ACTION = "me.liaoheng.wallpaper.ALARM_TASK_SCHEDULE";
+    public static final String ACTION = "com.rucksack.dailywallpaper.ALARM_TASK_SCHEDULE";
 
     public static final int REQUEST_CODE = 0x12;
 

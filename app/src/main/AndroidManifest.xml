@@ -50,7 +50,7 @@
 
         <provider
             android:name=".data.provider.TasksProvider"
-            android:authorities="me.liaoheng.wallpaper"
+            android:authorities="com.rucksack.dailywallpaper"
             android:exported="false" />
 
         <meta-data

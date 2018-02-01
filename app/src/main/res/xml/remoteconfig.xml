@@ -3,7 +3,7 @@
 <defaultsMap>
     <entry>
         <key>dailywallpaper_banner_ads_enabled</key>
-        <value>true</value>
+        <value>false</value>
     </entry>
 </defaultsMap>
     <!-- END xml_defaults -->
