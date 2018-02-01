@@ -89,7 +89,7 @@
         <RelativeLayout
             android:id="@+id/adMobView"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:elevation="1dp" />
     </RelativeLayout>
