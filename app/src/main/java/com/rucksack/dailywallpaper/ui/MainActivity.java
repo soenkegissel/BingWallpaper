@@ -1,6 +1,7 @@
 package com.rucksack.dailywallpaper.ui;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -59,6 +60,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import com.pixplicity.generate.OnFeedbackListener;
+import com.pixplicity.generate.Rate;
 import com.rucksack.dailywallpaper.BuildConfig;
 import com.rucksack.dailywallpaper.R;
 import com.rucksack.dailywallpaper.data.BingWallpaperNetworkClient;
@@ -106,6 +109,7 @@ public class MainActivity extends BaseActivity
     private WallpaperBroadcastReceiver mWallpaperBroadcastReceiver;
     private BingWallpaperImage mCurBingWallpaperImage;
     private boolean isRun;
+    private Rate mRateBar;
 
     //Ads
     private static final String BANNER_ADS_ENABLED_KEY = "dailywallpaper_banner_ads_enabled";
@@ -171,6 +175,69 @@ public class MainActivity extends BaseActivity
         getBingWallpaper();
         MobileAdManager mobileAds = new MobileAdManager(this);
         mobileAds.get(RemoteConfigHelper.getRemoteConfigBoolean(this, BANNER_ADS_ENABLED_KEY));
+
+        if(BuildConfig.GOOGLE) {
+            initRate();
+            Log.d(TAG, "Rate. getRemainingCount: "+mRateBar.getRemainingCount());
+            mRateBar.count();
+        }
+    }
+
+    private void initRate() {
+        ViewGroup viewGroup = findViewById(R.id.coordinatorLayout);
+        mRateBar = new Rate.Builder(this)
+                .setTriggerCount(3)
+                .setMinimumInstallTime(0)
+                .setFeedbackAction(new OnFeedbackListener() {
+                    @Override
+                    public void onFeedbackTapped() {
+                        Intent intent = new Intent(Intent.ACTION_SEND);
+                        intent.setType("text/plain");
+                        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"rucksack.development@gmail.com"});
+                        intent.putExtra(Intent.EXTRA_SUBJECT, "DailyWallpaper user feedback");
+                        intent.putExtra(Intent.EXTRA_TEXT, "I want to get in contact with the developers about: ");
+                        try {
+                            startActivity(Intent.createChooser(intent, "How to send mail?"));
+                        } catch (android.content.ActivityNotFoundException ex) {
+                            //do something else
+                            Toast.makeText(MainActivity.this, "Sorry, no activity found to handle Emails.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onRateTapped() {
+                        Uri uri = Uri.parse("market://details?id=" + MainActivity.this.getPackageName());
+                        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                        // To count with Play market backstack, After pressing back button,
+                        // to taken back to our application, we need to add following flags to intent.
+                        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_DOCUMENT  |
+                                Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                        try
+                        {
+                            MainActivity.this.startActivity(goToMarket);
+                        }
+                        catch (ActivityNotFoundException e)
+                        {
+                            MainActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + MainActivity.this.getPackageName())));
+                        }
+                        finally
+                        {
+                            uri = null;
+                            goToMarket = null;
+                        }
+                    }
+
+                    @Override
+                    public void onRequestDismissed(boolean dontAskAgain) {
+                        if (dontAskAgain) {
+                            Toast.makeText(MainActivity.this, "Ok then, I won't bother you again.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Ok, I'll ask again later.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setSnackBarParent(viewGroup)
+                .build();
     }
 
     private void getBingWallpaper() {
@@ -325,10 +392,12 @@ public class MainActivity extends BaseActivity
                 } else if (BingWallpaperState.SUCCESS.equals(state)) {
                     dismissProgressDialog();
                     UIUtils.showToast(getApplicationContext(), getString(R.string.set_wallpaper_success));
+                    showRating();
                 } else if (BingWallpaperState.FAIL.equals(state)) {
                     dismissProgressDialog();
                     UIUtils.showToast(getApplicationContext(), getString(R.string.set_wallpaper_failure));
                 }
+
             }
         }
     }
@@ -414,6 +483,14 @@ public class MainActivity extends BaseActivity
             }
         });
 
+    }
+
+    private void showRating() {
+        if(BuildConfig.GOOGLE) {
+            FirebaseEventHelper.sendEvent(MainActivity.this, "ratingDialogShown");
+            Log.d(TAG, "Rate. Show rating?! "+ mRateBar.showRequest());
+            mRateBar.showRequest();
+        }
     }
 
     private void addActionButton(@ColorInt int lightMutedSwatch, @ColorInt int lightVibrantSwatch, String text,
